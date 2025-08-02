@@ -6,6 +6,7 @@ from typing import Dict, List, Optional
 
 import requests
 from bs4 import BeautifulSoup
+from bs4.element import Tag
 
 from spotdl.providers.lyrics.base import LyricsProvider
 
@@ -78,17 +79,32 @@ class AzLyrics(LyricsProvider):
 
         results = {}
         for td_tag in td_tags:
+            if not isinstance(td_tag, Tag):
+                continue
+
             a_tags = td_tag.find_all("a", href=True)
             if len(a_tags) == 0:
                 continue
 
             a_tag = a_tags[0]
-            url = a_tag["href"].strip()
+            if not isinstance(a_tag, Tag):
+                continue
+
+            href = a_tag.get("href")
+            if not isinstance(href, str):
+                continue
+
+            url = href.strip()
             if url == "":
                 continue
 
-            title = td_tag.find("span").get_text().strip()
-            artist = td_tag.find("b").get_text().strip()
+            span_tag = td_tag.find("span")
+            b_tag = td_tag.find("b")
+            if not isinstance(span_tag, Tag) or not isinstance(b_tag, Tag):
+                continue
+
+            title = span_tag.get_text().strip()
+            artist = b_tag.get_text().strip()
 
             results[f"{artist} - {title}"] = url
 
