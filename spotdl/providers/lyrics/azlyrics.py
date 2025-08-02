@@ -87,8 +87,10 @@ class AzLyrics(LyricsProvider):
             if url == "":
                 continue
 
-            title = td_tag.find("span").get_text().strip()
-            artist = td_tag.find("b").get_text().strip()
+            span = td_tag.find("span")
+            title = span.get_text().strip() if span else ""
+            b_tag = td_tag.find("b")
+            artist = b_tag.get_text().strip() if b_tag else ""
 
             results[f"{artist} - {title}"] = url
 
@@ -113,6 +115,8 @@ class AzLyrics(LyricsProvider):
         div_tags = soup.find_all("div", class_=False, id_=False)
 
         # Find the div with the longest text
+        if not div_tags:
+            return None
         lyrics_div = sorted(div_tags, key=lambda x: len(x.text))[-1]
 
         # extract lyrics from div and clean it up
