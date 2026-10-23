@@ -83,12 +83,24 @@ class AzLyrics(LyricsProvider):
                 continue
 
             a_tag = a_tags[0]
-            url = a_tag["href"].strip()
+            if not isinstance(a_tag, Tag):
+                continue
+
+            href = a_tag.get("href")
+            if not isinstance(href, str):
+                continue
+
+            url = href.strip()
             if url == "":
                 continue
 
-            title = td_tag.find("span").get_text().strip()
-            artist = td_tag.find("b").get_text().strip()
+            title_tag = td_tag.find("span")
+            artist_tag = td_tag.find("b")
+            if not isinstance(title_tag, Tag) or not isinstance(artist_tag, Tag):
+                continue
+
+            title = title_tag.get_text().strip()
+            artist = artist_tag.get_text().strip()
 
             results[f"{artist} - {title}"] = url
 
