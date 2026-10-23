@@ -87,8 +87,14 @@ class AzLyrics(LyricsProvider):
             if url == "":
                 continue
 
-            title = td_tag.find("span").get_text().strip()
-            artist = td_tag.find("b").get_text().strip()
+            title_tag = td_tag.find("span")
+            artist_tag = td_tag.find("b")
+
+            if title_tag is None or artist_tag is None:
+                continue
+
+            title = title_tag.get_text().strip()
+            artist = artist_tag.get_text().strip()
 
             results[f"{artist} - {title}"] = url
 
@@ -111,6 +117,9 @@ class AzLyrics(LyricsProvider):
 
         # Find all divs that don't have a class
         div_tags = soup.find_all("div", class_=False, id_=False)
+
+        if len(div_tags) == 0:
+            return None
 
         # Find the div with the longest text
         lyrics_div = sorted(div_tags, key=lambda x: len(x.text))[-1]
@@ -139,6 +148,9 @@ class AzLyrics(LyricsProvider):
             js_code = resp.text
             start_index = js_code.find('value"') + 9
             end_index = js_code[start_index:].find('");')
+
+            if end_index < 0:
+                return None
 
             x_code = js_code[start_index : start_index + end_index]
         except requests.ConnectionError:
