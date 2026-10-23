@@ -38,6 +38,8 @@ class AzLyrics(LyricsProvider):
         - A dictionary with the results. (The key is the title and the value is the url.)
         """
 
+        from bs4.element import Tag
+
         if self.x_code is None:
             self.x_code = self.get_x_code()
 
@@ -78,17 +80,34 @@ class AzLyrics(LyricsProvider):
 
         results = {}
         for td_tag in td_tags:
+            if not isinstance(td_tag, Tag):
+                continue
+
             a_tags = td_tag.find_all("a", href=True)
             if len(a_tags) == 0:
                 continue
 
             a_tag = a_tags[0]
-            url = a_tag["href"].strip()
+            if not isinstance(a_tag, Tag):
+                continue
+
+            href = a_tag.get("href")
+            if not isinstance(href, str):
+                continue
+
+            url = href.strip()
             if url == "":
                 continue
 
-            title = td_tag.find("span").get_text().strip()
-            artist = td_tag.find("b").get_text().strip()
+            span_tag = td_tag.find("span")
+            if not isinstance(span_tag, Tag):
+                continue
+            title = span_tag.get_text().strip()
+
+            artist_tag = td_tag.find("b")
+            if not isinstance(artist_tag, Tag):
+                continue
+            artist = artist_tag.get_text().strip()
 
             results[f"{artist} - {title}"] = url
 
